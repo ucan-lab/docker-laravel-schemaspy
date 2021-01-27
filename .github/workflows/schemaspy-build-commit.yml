@@ -11,14 +11,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Dependencies
+        run: docker-compose run composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+
       - name: Build Docker
         run: |
-          docker-compose up -d app db
+          docker-compose up -d
           docker-compose ps
 
-      - name: Install Dependencies
+      - name: Laravel Settings
         run: |
-          docker-compose run -T composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          docker-compose exec -T db mysql -u phper -psecret laravel_local -e'show databases;'
           docker-compose exec -T app cp .env.example .env
           docker-compose exec -T app php artisan key:generate
           docker-compose exec -T app docker-php-ext-install pdo_mysql
