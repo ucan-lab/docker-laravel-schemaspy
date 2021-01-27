@@ -1,0 +1,37 @@
+tweets:
+  columns:
+    id: bigIncrements
+    user_id: unsignedBigInteger
+    content: text
+
+followers:
+  columns:
+    id: bigIncrements
+    user_id: unsignedBigInteger
+    follow_id: unsignedBigInteger
+  indexes:
+    - type: unique
+      columns: [user_id, follow_id]
+  foreign_keys:
+    - columns: user_id
+      references: id
+      on: users
+    - columns: follow_id
+      references: id
+      on: users
+
+likes:
+  columns:
+    id: bigIncrements
+    user_id: unsignedBigInteger
+    tweet_id: unsignedBigInteger
+  indexes:
+    - type: unique
+      columns: [user_id, tweet_id]
+  foreign_keys:
+    - columns: user_id
+      references: id
+      on: users
+    - columns: tweet_id
+      references: id
+      on: tweets
