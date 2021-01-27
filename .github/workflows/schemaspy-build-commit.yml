@@ -11,21 +11,27 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install Dependencies
+        run: docker-compose run composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+
       - name: Build Docker
         run: |
           docker-compose up -d app db
           docker-compose ps
 
-      - name: Install Dependencies
+      - name: Laravel Settings
         run: |
-          docker-compose run -T composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          docker-compose exec -T app docker-php-ext-install pdo_mysql
           docker-compose exec -T app cp .env.example .env
           docker-compose exec -T app php artisan key:generate
-          docker-compose exec -T app docker-php-ext-install pdo_mysql
+          docker-compose exec -T app php artisan optimize:clear
           docker-compose exec -T app php artisan migrate
 
       - name: Build Schemaspy
-        run: docker-compose up schemaspy
+        run: |
+          rm -rf ./schemaspy/output
+          chmod -R 777 ./schemaspy/output
+          docker-compose up schemaspy
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
