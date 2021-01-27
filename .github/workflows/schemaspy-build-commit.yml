@@ -1,0 +1,32 @@
+name: Schemaspy Build & Commit
+
+on:
+  pull_request:
+    paths:
+      - 'backend/database/migrations/*'
+
+jobs:
+  build-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Build Docker
+        run: |
+          docker-compose up -d app db
+          docker-compose ps
+
+      - name: Install Dependencies
+        run: |
+          docker-compose run -T composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
+          docker-compose exec -T app cp .env.example .env
+          docker-compose exec -T app php artisan key:generate
+          docker-compose exec -T app docker-php-ext-install pdo_mysql
+          docker-compose exec -T app php artisan migrate
+
+      - name: Build Schemaspy
+        run: docker-compose up schemaspy
+
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: chore Apply automatically build schemaspy
