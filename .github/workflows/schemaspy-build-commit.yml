@@ -18,6 +18,7 @@ jobs:
         run: |
           docker-compose build app db
           docker-compose up -d app db
+          docker-compose ps
 
       - name: PHP Version
         run: docker-compose exec -T app php --version
@@ -30,25 +31,11 @@ jobs:
           docker-compose exec -T app composer install -q --no-ansi --no-interaction --no-scripts --no-suggest --no-progress --prefer-dist
           docker-compose exec -T app cp .env.example .env
           docker-compose exec -T app php artisan key:generate
-          docker-compose exec -T app chmod -R 777 storage bootstrap/cache
-
-      - name: Laravel Version
-        run: docker-compose exec -T app php artisan --version
-
-      - name: Laravel Migrate
-        run: docker-compose exec -T app php artisan migrate
+          docker-compose exec -T app php artisan migrate
 
       - name: Build Schemaspy
         run: docker-compose up schemaspy
 
-      - name: Commit Schemaspy
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "chore Update schemaspy" -a
-
-      - name: Push GitHub
-        uses: ad-m/github-push-action@master
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: chore Apply automatically build schemaspy
