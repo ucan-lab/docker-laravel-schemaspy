@@ -1,6 +1,8 @@
 version: "3.8"
 volumes:
   db-store:
+networks:
+  backend:
 services:
   composer:
     image: composer:2.0
@@ -16,6 +18,8 @@ services:
       - ./backend:/work/backend
     working_dir: /work/backend
     command: php artisan serve --host=0.0.0.0
+    networks:
+      - backend
 
   db:
     image: mysql:8.0
@@ -26,27 +30,5 @@ services:
       - MYSQL_USER=phper
       - MYSQL_PASSWORD=secret
       - MYSQL_ROOT_PASSWORD=secret
-
-  schemaspy:
-    image: schemaspy/schemaspy
-    volumes:
-      - ./schemaspy/output:/output
-      - ./schemaspy/drivers:/drivers
-    command: >
-      java -jar schemaspy.jar
-      -t mysql
-      -dp /drivers
-      -host db
-      -port 3306
-      -db laravel_local
-      -u phper
-      -p secret
-      -s laravel_local
-      -connprops allowPublicKeyRetrieval\\=false useSSL\\=false
-
-  schemaspy_web:
-    image: nginx:1.18-alpine
-    volumes:
-      - ./schemaspy/output:/usr/share/nginx/html
-    ports:
-      - 8080:80
+    networks:
+      - backend

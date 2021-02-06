@@ -29,7 +29,7 @@ jobs:
         run: |
           rm -rf ./schemaspy/output
           chmod -R 777 ./schemaspy/output
-          docker-compose up schemaspy
+          docker-compose -f docker-compose.yml -f docker-compose.schemaspy.yml up -d
 
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
